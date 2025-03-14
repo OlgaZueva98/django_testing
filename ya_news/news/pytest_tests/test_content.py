@@ -43,7 +43,7 @@ def test_comments_order(client, id_for_news):
 
 
 @pytest.mark.parametrize(
-    'parametrized_client, form_in_context.',
+    'parametrized_client, form_in_context',
     (
         (pytest.lazy_fixture('reader_client'), True),
         (pytest.lazy_fixture('unauth_client'), False),
