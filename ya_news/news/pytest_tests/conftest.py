@@ -1,5 +1,4 @@
 import pytest
-
 from django.test.client import Client
 from django.urls import reverse
 
@@ -31,15 +30,21 @@ def reader_client(reader):
 
 
 @pytest.fixture
-def unauth_client():
-    return Client()
-
-
-@pytest.fixture
 def news(author):
     return News.objects.create(
         title='Заголовок',
         text='Текст новости'
+    )
+
+
+@pytest.fixture
+def news_list():
+    return News.objects.bulk_create(
+        News(
+            title=f'Заголовок {index}',
+            text='Просто текст.'
+        )
+        for index in range(10)
     )
 
 
@@ -53,13 +58,15 @@ def comment(author, news):
 
 
 @pytest.fixture
-def id_for_news(news):
-    return (news.id,)
-
-
-@pytest.fixture
-def id_for_comment(comment):
-    return (comment.id,)
+def comment_list(news, author):
+    return Comment.objects.bulk_create(
+        Comment(
+            news=news,
+            author=author,
+            text='Текст комментария'
+        )
+        for index in range(10)
+    )
 
 
 @pytest.fixture
@@ -70,6 +77,46 @@ def form_data():
 
 
 @pytest.fixture
-def url_for_comments(id_for_news):
-    url = reverse('news:detail', args=id_for_news)
+def url_for_comments(news):
+    url = reverse('news:detail', args=(news.id,))
     return f'{url}#comments'
+
+
+@pytest.fixture(autouse=True)
+def db_access(db):
+    pass
+
+
+@pytest.fixture
+def home_url():
+    return reverse('news:home')
+
+
+@pytest.fixture
+def news_detail_url(news):
+    return reverse('news:detail', args=(news.id,))
+
+
+@pytest.fixture
+def comment_edit_url(comment):
+    return reverse('news:edit', args=(comment.id,))
+
+
+@pytest.fixture
+def comment_delete_url(comment):
+    return reverse('news:delete', args=(comment.id,))
+
+
+@pytest.fixture
+def login_url():
+    return reverse('users:login')
+
+
+@pytest.fixture
+def logout_url():
+    return reverse('users:logout')
+
+
+@pytest.fixture
+def signup_url():
+    return reverse('users:signup')

@@ -1,77 +1,56 @@
 from http import HTTPStatus
-import pytest
 
-from django.urls import reverse
+import pytest
 from pytest_django.asserts import assertRedirects
 
 
-@pytest.mark.parametrize(
-    'name, args',
-    (
-        ('news:home', None),
-        ('news:detail', pytest.lazy_fixture('id_for_news')),
-        ('users:login', None),
-        ('users:logout', None),
-        ('users:signup', None),
-    ),
-)
-def test_home_availability_for_anonymous_user(client, name, args, news):
-    """
-    Главная страница, страница отдельной новости,
-    cтраницы регистрации пользователей, входа в учётную запись и выхода
-    из неё доступны анонимному пользователю.
-    """
-    url = reverse(name, args=args)
-    print('URL', url)
-    response = client.get(url)
-    assert response.status_code == HTTPStatus.OK
+# Константы для страниц
+HOME = pytest.lazy_fixture('home_url')
+NEWS_DETAIL = pytest.lazy_fixture('news_detail_url')
+COMMENT_EDIT = pytest.lazy_fixture('comment_edit_url')
+COMMENT_DELETE = pytest.lazy_fixture('comment_delete_url')
+LOGIN = pytest.lazy_fixture('login_url')
+LOGOUT = pytest.lazy_fixture('logout_url')
+SIGNUP = pytest.lazy_fixture('signup_url')
+# Константы для клиента, через который делается запрос
+AUTHOR_CLIENT = pytest.lazy_fixture('author_client')
+READER_CLIENT = pytest.lazy_fixture('reader_client')
 
 
 @pytest.mark.parametrize(
-    'parametrized_client, expected_status',
+    'url, parametrized_client, expected_status',
     (
-        (pytest.lazy_fixture('reader_client'), HTTPStatus.NOT_FOUND),
-        (pytest.lazy_fixture('author_client'), HTTPStatus.OK)
+        (HOME, pytest.lazy_fixture('client'), HTTPStatus.OK),
+        (NEWS_DETAIL, pytest.lazy_fixture('client'), HTTPStatus.OK),
+        (LOGIN, pytest.lazy_fixture('client'), HTTPStatus.OK),
+        (LOGOUT, pytest.lazy_fixture('client'), HTTPStatus.OK),
+        (SIGNUP, pytest.lazy_fixture('client'), HTTPStatus.OK),
+        (COMMENT_EDIT, READER_CLIENT, HTTPStatus.NOT_FOUND),
+        (COMMENT_EDIT, AUTHOR_CLIENT, HTTPStatus.OK),
+        (COMMENT_DELETE, READER_CLIENT, HTTPStatus.NOT_FOUND),
+        (COMMENT_DELETE, AUTHOR_CLIENT, HTTPStatus.OK)
     ),
 )
-@pytest.mark.parametrize(
-    'name, args',
-    (
-        ('news:edit', pytest.lazy_fixture('id_for_comment')),
-        ('news:delete', pytest.lazy_fixture('id_for_comment')),
-    ),
-)
-def test_edit_delete_for_different_users(
-        parametrized_client, name, args, expected_status
+def test_availability_for_different_users(
+        url, parametrized_client, expected_status
 ):
     """
-    Cтраницы удаления и редактирования комментария доступны автору комментария.
-    Авторизованный пользователь не может зайти на страницы редактирования
-    или удаления чужих комментариев.
+    Проверка доступности страниц проекта для анонимных
+    и авторизованных пользоваелей.
     """
-    url = reverse(name, args=args)
     response = parametrized_client.get(url)
-
     assert response.status_code == expected_status
 
 
 @pytest.mark.parametrize(
-    'name, args',
-    (
-        ('news:edit', pytest.lazy_fixture('id_for_comment')),
-        ('news:delete', pytest.lazy_fixture('id_for_comment'))
-    ),
+    'url',
+    (COMMENT_EDIT, COMMENT_DELETE)
 )
-def test_redirects(client, name, args):
+def test_redirects(client, url, login_url, comment_list):
     """
     При попытке перейти на страницу редактирования или удаления комментария
     анонимный пользователь перенаправляется на страницу авторизации.
     """
-    login_url = reverse('users:login')
-    if args:
-        url = reverse(name, args=args)
-    else:
-        url = reverse(name)
     expected_url = f'{login_url}?next={url}'
     response = client.get(url)
     assertRedirects(response, expected_url)
