@@ -1,4 +1,5 @@
 import pytest
+from django.conf import settings
 from django.test.client import Client
 from django.urls import reverse
 
@@ -39,12 +40,12 @@ def news(author):
 
 @pytest.fixture
 def news_list():
-    return News.objects.bulk_create(
+    News.objects.bulk_create(
         News(
             title=f'Заголовок {index}',
             text='Просто текст.'
         )
-        for index in range(10)
+        for index in range(settings.NEWS_COUNT_ON_HOME_PAGE + 1)
     )
 
 
@@ -59,14 +60,12 @@ def comment(author, news):
 
 @pytest.fixture
 def comment_list(news, author):
-    return Comment.objects.bulk_create(
-        Comment(
+    for index in range(settings.NEWS_COUNT_ON_HOME_PAGE + 1):
+        Comment.objects.create(
             news=news,
             author=author,
             text='Текст комментария'
         )
-        for index in range(10)
-    )
 
 
 @pytest.fixture

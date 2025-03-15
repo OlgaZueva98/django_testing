@@ -5,24 +5,21 @@ from notes.forms import NoteForm
 class TestContent(BaseFixtures):
     """Класс, тестирующий контент."""
 
-    def test_note_in_context(self):
+    def test_note_is_in_context(self):
         """
         Отдельная заметка передаётся на страницу со списком заметок
         в списке object_list в словаре context.
-        """
-        response = self.author_client.get(self.NOTES_URL)
-        notes = response.context['note_list']
-        self.assertIn(self.note, notes)
-
-    def test_author_notes_not_in_readers_list(self):
-        """
         В список заметок одного пользователя не попадают
         заметки другого пользователя.
         """
-        response = self.author_client.get(self.NOTES_URL)
-        notes = response.context['note_list']
-        author_list = [note.author for note in notes]
-        self.assertNotIn(self.reader, author_list)
+        test_cases = (
+            (self.author_client, True),
+            (self.reader_client, False),
+        )
+        for client, expected_result in test_cases:
+            response = client.get(self.NOTES_URL)
+            notes = response.context['note_list']
+            self.assertEqual((self.note in notes), expected_result)
 
     def test_form_in_add_edit(self):
         """На страницы создания и редактирования заметки передаются формы."""

@@ -15,16 +15,17 @@ SIGNUP = pytest.lazy_fixture('signup_url')
 # Константы для клиента, через который делается запрос
 AUTHOR_CLIENT = pytest.lazy_fixture('author_client')
 READER_CLIENT = pytest.lazy_fixture('reader_client')
+CLIENT = pytest.lazy_fixture('client')
 
 
 @pytest.mark.parametrize(
     'url, parametrized_client, expected_status',
     (
-        (HOME, pytest.lazy_fixture('client'), HTTPStatus.OK),
-        (NEWS_DETAIL, pytest.lazy_fixture('client'), HTTPStatus.OK),
-        (LOGIN, pytest.lazy_fixture('client'), HTTPStatus.OK),
-        (LOGOUT, pytest.lazy_fixture('client'), HTTPStatus.OK),
-        (SIGNUP, pytest.lazy_fixture('client'), HTTPStatus.OK),
+        (HOME, CLIENT, HTTPStatus.OK),
+        (NEWS_DETAIL, CLIENT, HTTPStatus.OK),
+        (LOGIN, CLIENT, HTTPStatus.OK),
+        (LOGOUT, CLIENT, HTTPStatus.OK),
+        (SIGNUP, CLIENT, HTTPStatus.OK),
         (COMMENT_EDIT, READER_CLIENT, HTTPStatus.NOT_FOUND),
         (COMMENT_EDIT, AUTHOR_CLIENT, HTTPStatus.OK),
         (COMMENT_DELETE, READER_CLIENT, HTTPStatus.NOT_FOUND),

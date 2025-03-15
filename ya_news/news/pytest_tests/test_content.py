@@ -9,7 +9,7 @@ def test_news_count(client, home_url, news_list):
     response = client.get(home_url)
     object_list = response.context['object_list']
     news_count = object_list.count()
-    assert news_count <= settings.NEWS_COUNT_ON_HOME_PAGE
+    assert news_count == settings.NEWS_COUNT_ON_HOME_PAGE
 
 
 def test_news_order(client, home_url, news_list):
@@ -53,4 +53,4 @@ def test_comment_form_in_context(
     """
     response = parametrized_client.get(news_detail_url)
     form = response.context.get('form')
-    assert isinstance(form, CommentForm) == form_in_context
+    assert isinstance(form, CommentForm) is form_in_context

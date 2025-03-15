@@ -56,6 +56,7 @@ class TestNoteCreation(BaseFixtures):
         """Slug формируется автоматически из заголовка."""
         Note.objects.all().delete()
         self.author_client.post(self.NOTE_ADD_URL, data=self.form_data)
+        self.assertEqual(Note.objects.count(), 1)
         note = Note.objects.get()
         self.assertEqual(note.slug, slugify(self.NOTE_TITLE)[:100])
 
@@ -92,7 +93,7 @@ class TestNoteEditDelete(BaseFixtures):
         )
         self.assertRedirects(response, self.SUCCESS_URL)
         new_note = Note.objects.get(id=self.note.id)
-        self.assertEqual(new_note.text, self.NEW_NOTE_TEXT)
+        self.assertEqual(new_note.text, self.form_data['text'])
         self.assertEqual(new_note.title, self.note.title)
         self.assertEqual(new_note.author, self.note.author)
 
