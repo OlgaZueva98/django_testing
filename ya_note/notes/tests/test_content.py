@@ -19,7 +19,7 @@ class TestContent(BaseFixtures):
         for client, expected_result in test_cases:
             response = client.get(self.NOTES_URL)
             notes = response.context['note_list']
-            self.assertEqual((self.note in notes), expected_result)
+            self.assertIs((self.note in notes), expected_result)
 
     def test_form_in_add_edit(self):
         """На страницы создания и редактирования заметки передаются формы."""
